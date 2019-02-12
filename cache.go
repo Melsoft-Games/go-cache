@@ -947,9 +947,17 @@ func (c *cache) DeleteExpired() {
 	}
 }
 
+func (c *cache) remove(k string) (interface{}, bool) {
+	if v, found := c.items[k]; found {
+		delete(c.items, k)
+		return v.Object, c.onEvicted != nil
+	}
+	return nil, false
+}
+
 func (c *cache) Remove(k string) interface{} {
 	c.mu.Lock()
-	v, evicted := c.delete(k)
+	v, evicted := c.remove(k)
 	c.mu.Unlock()
 	if evicted {
 		c.onEvicted(k, v)
