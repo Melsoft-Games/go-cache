@@ -947,6 +947,16 @@ func (c *cache) DeleteExpired() {
 	}
 }
 
+func (c *cache) Remove(k string) interface{} {
+	c.mu.Lock()
+	v, evicted := c.delete(k)
+	c.mu.Unlock()
+	if evicted {
+		c.onEvicted(k, v)
+	}
+	return v
+}
+
 // Sets an (optional) function that is called with the key and value when an
 // item is evicted from the cache. (Including when it is deleted manually, but
 // not when it is overwritten.) Set to nil to disable.
